@@ -1,6 +1,7 @@
 // 📦 Import Express types and Room model
 import { Request, Response, NextFunction } from "express";
 import Room from "../models/Room";
+import redis from "../config/redisClient";
 
 // 🏗️ Create a new Room – POST /api/rooms
 export const createRoom = async (
@@ -28,13 +29,28 @@ export const createRoom = async (
   }
 };
 
-// 📋 Get all Rooms – GET /api/rooms
+// 📋 Get all Rooms – GET /api/rooms (with Redis caching)
 export const getAllRooms = async (
   _req: Request,
   res: Response
 ): Promise<void> => {
   try {
+    // Try fetching rooms from Redis first
+    const cachedRooms = await redis.get("rooms");
+
+    if (cachedRooms) {
+      console.log("🚀 Hittade rum i cache");
+      res.status(200).json(JSON.parse(cachedRooms));
+      return;
+    }
+
+    // If not in cache - fetch from MongoDB
     const rooms = await Room.find();
+
+    // Save rooms to cache for 60 seconds
+    await redis.set("rooms", JSON.stringify(rooms), { EX: 60 });
+
+    console.log("✅ Hittade rum i databasen och sparade i cache");
     res.status(200).json(rooms);
   } catch (err) {
     console.error("Error fetching rooms:", err);
