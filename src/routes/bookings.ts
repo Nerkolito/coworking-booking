@@ -1,22 +1,37 @@
+// 📦 Import dependencies
 import express from "express";
 import {
   createBooking,
-  getMyBookings,
   getAllBookings,
+  getMyBookings,
   updateBooking,
   deleteBooking,
 } from "../controller/bookingController";
+import { authenticate, authorizeAdmin } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
-// Requires auth middleware
-import { authenticate, authorizeAdmin } from "../middleware/authMiddleware";
-
+// 🛡️ Protect all /bookings routes - authentication required
 router.use(authenticate);
-router.post("/", createBooking);
+
+// 📋 GET /api/bookings
+// Regular user: See own bookings
 router.get("/", getMyBookings);
+
+// 🛡️ GET /api/bookings/all
+// Admin: See all bookings
 router.get("/all", authorizeAdmin, getAllBookings);
+
+// 📦 POST /api/bookings
+// Create a new booking (User or Admin)
+router.post("/", createBooking);
+
+// ✏️ PUT /api/bookings/:id
+// Update an existing booking (Owner or Admin)
 router.put("/:id", updateBooking);
+
+// ❌ DELETE /api/bookings/:id
+// Delete a booking (Owner or Admin)
 router.delete("/:id", deleteBooking);
 
 export default router;

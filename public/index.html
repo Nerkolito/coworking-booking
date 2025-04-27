@@ -1,30 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>Nemrins booking notifier</title>
+    <meta charset="utf-8" />
+    <title>Nemrin's Booking Notifier</title>
   </head>
   <body>
-    <h2>Booking Updates</h2>
+    <h2>📢 Booking Updates (Live)</h2>
+
+    <!-- Where notifications will be shown -->
     <ul id="notifications"></ul>
 
+    <!-- Import Socket.IO client -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
     <script>
-      const socket = io("http://localhost:5000");
+      // Connect to your backend server using Socket.IO
+      const socket = io("http://localhost:5000"); // ⚡ Important: Change to deployed domain for Railway!
 
       const list = document.getElementById("notifications");
 
+      // Helper function to add events to the list
       const logEvent = (type, data) => {
         const li = document.createElement("li");
         li.textContent = `${type}: ${JSON.stringify(data)}`;
         list.appendChild(li);
       };
 
+      // Listen for real-time events from the server
       socket.on("connect", () => {
-        console.log("Connected to server");
+        console.log("✅ Connected to server via WebSocket");
       });
-      socket.on("booking:created", (data) => logEvent("Booking Created", data));
-      socket.on("booking:updated", (data) => logEvent("Booking Updated", data));
-      socket.on("booking:deleted", (data) => logEvent("Booking Deleted", data));
+
+      socket.on("booking:created", (data) =>
+        logEvent("✅ Booking Created", data)
+      );
+      socket.on("booking:updated", (data) =>
+        logEvent("✏️ Booking Updated", data)
+      );
+      socket.on("booking:deleted", (data) =>
+        logEvent("❌ Booking Deleted", data)
+      );
     </script>
   </body>
 </html>

@@ -1,7 +1,8 @@
+// 📦 Import Express types and Room model
 import { Request, Response, NextFunction } from "express";
 import Room from "../models/Room";
 
-//  Skapa ett nytt rum – POST /rooms
+// 🏗️ Create a new Room – POST /api/rooms
 export const createRoom = async (
   req: Request,
   res: Response,
@@ -10,11 +11,13 @@ export const createRoom = async (
   try {
     const { name, capacity, type } = req.body;
 
+    // Validate input
     if (!name || !capacity || !type) {
       res.status(400).json({ message: "Alla fält måste fyllas i" });
       return;
     }
 
+    // Save new Room
     const newRoom = new Room({ name, capacity, type });
     const savedRoom = await newRoom.save();
 
@@ -25,7 +28,7 @@ export const createRoom = async (
   }
 };
 
-//  Hämta alla rum – GET /rooms
+// 📋 Get all Rooms – GET /api/rooms
 export const getAllRooms = async (
   _req: Request,
   res: Response
@@ -39,7 +42,7 @@ export const getAllRooms = async (
   }
 };
 
-//  Uppdatera rum – PUT /rooms/:id
+// ✏️ Update a Room – PUT /api/rooms/:id
 export const updateRoom = async (
   req: Request,
   res: Response,
@@ -54,10 +57,11 @@ export const updateRoom = async (
       return;
     }
 
+    // Update Room by ID
     const updatedRoom = await Room.findByIdAndUpdate(
       id,
       { name, capacity, type },
-      { new: true }
+      { new: true } // Return updated document
     );
 
     if (!updatedRoom) {
@@ -72,7 +76,7 @@ export const updateRoom = async (
   }
 };
 
-//  Ta bort rum – DELETE /rooms/:id
+// ❌ Delete a Room – DELETE /api/rooms/:id
 export const deleteRoom = async (
   req: Request,
   res: Response,

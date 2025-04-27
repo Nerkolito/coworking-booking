@@ -1,3 +1,4 @@
+// 📦 Import dependencies
 import express from "express";
 import {
   login,
@@ -7,8 +8,16 @@ import {
 
 const router = express.Router();
 
+// ✅ POST /api/auth/login
+// User login and receive JWT
 router.post("/login", login);
-router.post("/register", registerUser); // 👈 for regular users
-router.post("/register-admin", registerAdmin); // 👈 for admins only
+
+// ✅ POST /api/auth/register-admin
+// Admin user registration (for initial setup)
+router.post("/register-admin", registerAdmin);
+
+// ✅ POST /api/auth/register
+// Regular user registration
+router.post("/register", registerUser);
 
 export default router;

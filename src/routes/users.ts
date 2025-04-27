@@ -1,11 +1,19 @@
+// 📦 Import dependencies
 import express from "express";
 import { getAllUsers, deleteUser } from "../controller/userController";
 import { authenticate, authorizeAdmin } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
-router.use(authenticate); // All routes require login
-router.get("/", authorizeAdmin, getAllUsers); // List all users (admin only)
-router.delete("/:id", authorizeAdmin, deleteUser); // Delete user (admin only)
+// 🛡️ Protect all /users routes - authentication required
+router.use(authenticate);
+
+// 📋 GET /api/users
+// Admin: List all users
+router.get("/", authorizeAdmin, getAllUsers);
+
+// ❌ DELETE /api/users/:id
+// Admin: Delete a specific user
+router.delete("/:id", authorizeAdmin, deleteUser);
 
 export default router;

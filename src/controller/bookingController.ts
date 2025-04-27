@@ -1,9 +1,10 @@
+// 📦 Import modules and models
 import { Request, Response } from "express";
 import Booking from "../models/Booking";
 import Room from "../models/Room";
-import { io } from "../server"; // adjust path if needed
+import { io } from "../server"; // For real-time notifications
 
-// 📦 Skapa ny bokning
+// 📦 Create a new Booking – POST /api/bookings
 export const createBooking = async (
   req: Request,
   res: Response
@@ -16,14 +17,14 @@ export const createBooking = async (
   }
 
   try {
-    // Kontrollera att rummet finns
+    // Check if room exists
     const roomExists = await Room.findById(room);
     if (!roomExists) {
       res.status(404).json({ message: "Rummet hittades inte" });
       return;
     }
 
-    // Kontrollera om bokningen krockar
+    // Check for overlapping bookings
     const overlapping = await Booking.findOne({
       room,
       $or: [
@@ -41,8 +42,9 @@ export const createBooking = async (
       return;
     }
 
+    // Create new booking
     const newBooking = new Booking({
-      user: req.user!.userId, // Kommer från JWT middleware
+      user: req.user!.userId,
       room,
       startTime,
       endTime,
@@ -50,7 +52,7 @@ export const createBooking = async (
 
     await newBooking.save();
 
-    // Skicka meddelande till alla anslutna klienter via Socket.IO
+    // 📡 Send real-time notification to connected clients
     io.emit("booking:created", {
       message: "Ny bokning skapad!",
       booking: newBooking,
@@ -63,7 +65,7 @@ export const createBooking = async (
   }
 };
 
-// 📋 Hämta inloggad användares bokningar
+// 📋 Get current user's bookings – GET /api/bookings
 export const getMyBookings = async (
   req: Request,
   res: Response
@@ -78,7 +80,7 @@ export const getMyBookings = async (
   }
 };
 
-// 🛡️ Hämta alla bokningar – endast admin
+// 🛡️ Get all bookings (admin only) – GET /api/bookings/all
 export const getAllBookings = async (
   req: Request,
   res: Response
@@ -91,7 +93,7 @@ export const getAllBookings = async (
   }
 };
 
-// ✏️ Uppdatera bokning (user eller admin)
+// ✏️ Update a Booking – PUT /api/bookings/:id
 export const updateBooking = async (
   req: Request,
   res: Response
@@ -106,7 +108,7 @@ export const updateBooking = async (
       return;
     }
 
-    // Kontroll: Endast skaparen eller admin
+    // Only the creator or Admin can update
     if (
       booking.user.toString() !== req.user!.userId &&
       req.user!.role !== "Admin"
@@ -115,7 +117,7 @@ export const updateBooking = async (
       return;
     }
 
-    // Krockkontroll (förenklad)
+    // Check for conflicts
     const conflict = await Booking.findOne({
       _id: { $ne: booking._id },
       room: booking.room,
@@ -132,10 +134,12 @@ export const updateBooking = async (
       return;
     }
 
+    // Update booking
     booking.startTime = startTime;
     booking.endTime = endTime;
     await booking.save();
-    // ✅ Real-time notification
+
+    // 📡 Real-time update
     io.emit("booking:updated", {
       message: "En bokning har uppdaterats",
       booking,
@@ -147,7 +151,7 @@ export const updateBooking = async (
   }
 };
 
-// ❌ Ta bort bokning
+// ❌ Delete a Booking – DELETE /api/bookings/:id
 export const deleteBooking = async (
   req: Request,
   res: Response
@@ -161,7 +165,7 @@ export const deleteBooking = async (
       return;
     }
 
-    // Kontroll: Endast skaparen eller admin
+    // Only the creator or Admin can delete
     if (
       booking.user.toString() !== req.user!.userId &&
       req.user!.role !== "Admin"
@@ -172,10 +176,12 @@ export const deleteBooking = async (
 
     await booking.deleteOne();
 
+    // 📡 Real-time notification for deletion
     io.emit("booking:deleted", {
       message: "En bokning har raderats",
       bookingId: booking._id,
     });
+
     res.status(200).json({ message: "Bokningen raderades" });
   } catch (err) {
     res.status(500).json({ message: "Fel vid radering av bokning" });

@@ -1,37 +1,41 @@
+// 📦 Import necessary modules
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/User";
 
-// 🔐 Skapar en JWT-token för användaren
+// 🔐 Helper function: Generate JWT token for user
 const generateToken = (userId: string, role: "User" | "Admin") => {
   return jwt.sign({ userId, role }, process.env.JWT_SECRET as string, {
-    expiresIn: "1d",
+    expiresIn: "1d", // Token valid for 1 day
   });
 };
 
-// ✅ POST /api/auth/register-admin
+// ✅ POST /api/auth/register-admin - Register an Admin user
 export const registerAdmin = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   const { username, password } = req.body;
 
+  // Validate input
   if (!username || !password) {
     res.status(400).json({ message: "Ange användarnamn och lösenord" });
     return;
   }
 
   try {
+    // Check if username already exists
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       res.status(400).json({ message: "Användarnamnet används redan" });
       return;
     }
 
+    // Create new Admin user
     const newUser = new User({
       username,
       password,
-      role: "Admin", // ✅ fixed!
+      role: "Admin",
     });
 
     await newUser.save();
@@ -42,7 +46,7 @@ export const registerAdmin = async (
   }
 };
 
-// ✅ POST /api/auth/register (regular user)
+// ✅ POST /api/auth/register - Register a Regular User
 export const registerUser = async (
   req: Request,
   res: Response
@@ -61,6 +65,7 @@ export const registerUser = async (
       return;
     }
 
+    // Create new Regular user
     const newUser = new User({
       username,
       password,
@@ -75,7 +80,7 @@ export const registerUser = async (
   }
 };
 
-// ✅ POST /api/auth/login
+// ✅ POST /api/auth/login - User login
 export const login = async (req: Request, res: Response): Promise<void> => {
   const { username, password } = req.body;
 
@@ -93,6 +98,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // Create and send token if successful
     const token = generateToken(user.id.toString(), user.role);
     res.status(200).json({ token });
   } catch (err) {
