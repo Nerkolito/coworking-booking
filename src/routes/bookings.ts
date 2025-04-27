@@ -14,13 +14,13 @@ const router = express.Router();
 // 🛡️ Protect all /bookings routes - authentication required
 router.use(authenticate);
 
-// 📋 GET /api/bookings
-// Regular user: See own bookings
-router.get("/", getMyBookings);
-
 // 🛡️ GET /api/bookings/all
 // Admin: See all bookings
 router.get("/all", authorizeAdmin, getAllBookings);
+
+// 📋 GET /api/bookings
+// Regular user: See own bookings
+router.get("/", getMyBookings);
 
 // 📦 POST /api/bookings
 // Create a new booking (User or Admin)
