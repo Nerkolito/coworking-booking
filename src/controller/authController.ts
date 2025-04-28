@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/User";
 
-// 🔐 Hjälpfunktion för att skapa en JWT-token
+//  Hjälpfunktion för att skapa en JWT-token
 const generateToken = (userId: string, role: "User" | "Admin") => {
   return jwt.sign({ userId, role }, process.env.JWT_SECRET as string, {
     expiresIn: "1d", // Giltig i 1 dag

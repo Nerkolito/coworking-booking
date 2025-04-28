@@ -15,6 +15,11 @@ export const createBooking = async (
     res.status(400).json({ message: "Fyll i alla fält" });
     return;
   }
+  // Kontrollera att start- och sluttider är giltiga datum
+  if (new Date(endTime) <= new Date(startTime)) {
+    res.status(400).json({ message: "Sluttiden måste vara efter starttiden" });
+    return;
+  }
 
   try {
     // Kontrollera att rummet finns
@@ -100,6 +105,12 @@ export const updateBooking = async (
 ): Promise<void> => {
   const { id } = req.params;
   const { startTime, endTime } = req.body;
+
+  // Kontrollera att starttid är före sluttid
+  if (new Date(endTime) <= new Date(startTime)) {
+    res.status(400).json({ message: "Sluttiden måste vara efter starttiden" });
+    return;
+  }
 
   try {
     const booking = await Booking.findById(id);

@@ -24,7 +24,7 @@ const server = http.createServer(app);
 // Sätter upp Socket.IO för realtidsuppdateringar
 export const io = new SocketIOServer(server, {
   cors: {
-    origin: "*", // Tillåter alla domäner
+    origin: "*",
   },
 });
 
