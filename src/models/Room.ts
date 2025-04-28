@@ -1,17 +1,22 @@
-// 📦 Import Mongoose
 import mongoose from "mongoose";
 
-// 📄 Define Mongoose schema for Room
+// Definierar ett schema för rum i databasen
 const roomSchema = new mongoose.Schema({
-  name: { type: String, required: true }, // Room name (e.g., "Konferensrum 1")
-  capacity: { type: Number, required: true }, // How many people the room can hold
+  name: {
+    type: String,
+    required: true, // Namnet på rummet, måste anges
+  },
+  capacity: {
+    type: Number,
+    required: true, // Antal personer rummet rymmer
+  },
   type: {
     type: String,
-    enum: ["arbetsplats", "konferensrum"], // Only allow these two types
+    enum: ["arbetsplats", "konferensrum"], // Begränsar till endast dessa två typer
     required: true,
   },
 });
 
-// 📤 Create and export Room model
+// Skapar och exporterar Room-modellen så att vi kan använda den i andra filer
 const Room = mongoose.model("Room", roomSchema);
 export default Room;

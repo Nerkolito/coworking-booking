@@ -1,18 +1,18 @@
 import mongoose from "mongoose";
 
-//  Function to connect to MongoDB
+// Funktion som kopplar upp mot MongoDB
 const connectDB = async () => {
   try {
-    // Attempt to connect using the MONGO_URI from environment variables
+    // Försök ansluta till databasen med MONGO_URI från miljövariabler (.env)
     await mongoose.connect(process.env.MONGO_URI as string);
 
-    console.log(" MongoDB connected");
+    console.log("✅ MongoDB ansluten");
   } catch (err) {
-    //  If connection fails, log error and exit process
-    console.error(" MongoDB connection failed:", err);
-    process.exit(1); // Exit with failure code
+    // Om anslutningen misslyckas, skriv ut felet och avsluta programmet
+    console.error("❌ Kunde inte ansluta till MongoDB:", err);
+    process.exit(1); // Avsluta applikationen med felkod
   }
 };
 
-//  Export the connectDB function so it can be used in server.ts
+// Exporterar funktionen så den kan användas i server.ts
 export default connectDB;

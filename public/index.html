@@ -2,41 +2,48 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Nemrin's Booking Notifier</title>
+    <title>Nemrmins Booking Notifier</title>
+    <!-- Titel i webbläsarens flik -->
   </head>
-  <body>
-    <h2>📢 Booking Updates (Live)</h2>
 
-    <!-- Where notifications will be shown -->
+  <body>
+    <h2>📢📢 Booking Updates📢📢</h2>
+
+    <!-- Här kommer vi visa bokningsnotiser -->
     <ul id="notifications"></ul>
 
-    <!-- Import Socket.IO client -->
+    <!-- Importerar Socket.IO-klienten från CDN -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
     <script>
-      // Connect to your backend server using Socket.IO
-      const socket = io("https://coworking-booking-production.up.railway.app/"); // ⚡ Important: Change to deployed domain for Railway!
+      // Ansluter till backend-servern via WebSocket
+      const socket = io("https://coworking-booking-production.up.railway.app/");
 
       const list = document.getElementById("notifications");
 
-      // Helper function to add events to the list
+      // Hjälpfunktion för att lägga till nya händelser i listan
       const logEvent = (type, data) => {
         const li = document.createElement("li");
         li.textContent = `${type}: ${JSON.stringify(data)}`;
         list.appendChild(li);
       };
 
-      // Listen for real-time events from the server
+      // Lyssnar på Socket.IO events
       socket.on("connect", () => {
         console.log("✅ Connected to server via WebSocket");
       });
 
+      // När en bokning skapas
       socket.on("booking:created", (data) =>
         logEvent("✅ Booking Created", data)
       );
+
+      // När en bokning uppdateras
       socket.on("booking:updated", (data) =>
         logEvent("✏️ Booking Updated", data)
       );
+
+      // När en bokning tas bort
       socket.on("booking:deleted", (data) =>
         logEvent("❌ Booking Deleted", data)
       );

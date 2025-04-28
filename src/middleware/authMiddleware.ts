@@ -1,14 +1,13 @@
-// 📦 Import Express types and jsonwebtoken library
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-// 🧩 Define the expected structure of JWT payload
+// Definierar hur en JWT-payload ska se ut
 export interface JwtPayload {
-  userId: string;
-  role: "User" | "Admin";
+  userId: string; // Användarens ID
+  role: "User" | "Admin"; // Användarroll
 }
 
-// 🔐 Middleware: Authenticate user by verifying JWT token
+// Middleware för att verifiera JWT och autentisera användaren
 export const authenticate = (
   req: Request,
   res: Response,
@@ -16,7 +15,7 @@ export const authenticate = (
 ): void => {
   const authHeader = req.headers.authorization;
 
-  // Check if Authorization header is present and correct
+  // Kontroll: Finns token och börjar den med "Bearer "?
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     res.status(401).json({ message: "Ingen token tillhandahållen" });
     return;
@@ -25,7 +24,7 @@ export const authenticate = (
   const token = authHeader.split(" ")[1];
 
   try {
-    // Verify token and attach user payload to request
+    // Verifierar token och sparar info i req.user
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET as string
@@ -38,7 +37,7 @@ export const authenticate = (
   }
 };
 
-// 🛡 Middleware: Authorize only Admins to proceed
+// Middleware för att kontrollera om användaren är admin
 export const authorizeAdmin = (
   req: Request,
   res: Response,

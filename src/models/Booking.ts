@@ -1,29 +1,27 @@
-// 📦 Import Mongoose types
 import mongoose, { Schema, Document } from "mongoose";
 
-// 🧩 Define a TypeScript interface for Booking documents
+// Definierar ett TypeScript-interface för en bokning
 export interface IBooking extends Document {
-  user: mongoose.Types.ObjectId; // Reference to a User
-  room: mongoose.Types.ObjectId; // Reference to a Room
-  startTime: Date; // Start time of the booking
-  endTime: Date; // End time of the booking
+  user: mongoose.Types.ObjectId; // Länkar till en användare
+  room: mongoose.Types.ObjectId; // Länkar till ett rum
+  startTime: Date; // När bokningen börjar
+  endTime: Date; // När bokningen slutar
 }
-
-// 📄 Create Mongoose Schema for Booking
+// Skapar ett Mongoose-schema för bokningar
 const BookingSchema: Schema<IBooking> = new Schema({
   user: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: "User", // Referens till User-modellen
     required: true,
   },
   room: {
     type: Schema.Types.ObjectId,
-    ref: "Room",
+    ref: "Room", // Referens till Room-modellen
     required: true,
   },
   startTime: { type: Date, required: true },
   endTime: { type: Date, required: true },
 });
 
-// 📤 Export Booking model
+// Exporterar Mongoose-modellen så den kan användas i andra filer
 export default mongoose.model<IBooking>("Booking", BookingSchema);

@@ -1,30 +1,30 @@
-// 📦 Import modules and models
 import { Request, Response } from "express";
 import Booking from "../models/Booking";
 import Room from "../models/Room";
-import { io } from "../server"; // For real-time notifications
+import { io } from "../server";
 
-// 📦 Create a new Booking – POST /api/bookings
+// Skapar en ny bokning – POST /api/bookings
 export const createBooking = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   const { room, startTime, endTime } = req.body;
 
+  // Säkerställ att alla fält är ifyllda
   if (!room || !startTime || !endTime) {
     res.status(400).json({ message: "Fyll i alla fält" });
     return;
   }
 
   try {
-    // Check if room exists
+    // Kontrollera att rummet finns
     const roomExists = await Room.findById(room);
     if (!roomExists) {
       res.status(404).json({ message: "Rummet hittades inte" });
       return;
     }
 
-    // Check for overlapping bookings
+    // Kontrollera så att bokningen inte krockar med annan bokning
     const overlapping = await Booking.findOne({
       room,
       $or: [
@@ -42,7 +42,7 @@ export const createBooking = async (
       return;
     }
 
-    // Create new booking
+    // Spara ny bokning i databasen
     const newBooking = new Booking({
       user: req.user!.userId,
       room,
@@ -52,7 +52,7 @@ export const createBooking = async (
 
     await newBooking.save();
 
-    // 📡 Send real-time notification to connected clients
+    // Skicka realtidsnotis om ny bokning
     io.emit("booking:created", {
       message: "Ny bokning skapad!",
       booking: newBooking,
@@ -65,7 +65,7 @@ export const createBooking = async (
   }
 };
 
-// 📋 Get current user's bookings – GET /api/bookings
+// Hämta nuvarande användarens bokningar – GET /api/bookings
 export const getMyBookings = async (
   req: Request,
   res: Response
@@ -80,7 +80,7 @@ export const getMyBookings = async (
   }
 };
 
-// 🛡️ Get all bookings (admin only) – GET /api/bookings/all
+// Hämta alla bokningar (endast admin) – GET /api/bookings/all
 export const getAllBookings = async (
   req: Request,
   res: Response
@@ -93,7 +93,7 @@ export const getAllBookings = async (
   }
 };
 
-// ✏️ Update a Booking – PUT /api/bookings/:id
+// Uppdatera en bokning – PUT /api/bookings/:id
 export const updateBooking = async (
   req: Request,
   res: Response
@@ -108,7 +108,7 @@ export const updateBooking = async (
       return;
     }
 
-    // Only the creator or Admin can update
+    // Kontrollera att det är skaparen eller admin som försöker ändra
     if (
       booking.user.toString() !== req.user!.userId &&
       req.user!.role !== "Admin"
@@ -117,7 +117,7 @@ export const updateBooking = async (
       return;
     }
 
-    // Check for conflicts
+    // Kontrollera att tiden inte krockar med en annan bokning
     const conflict = await Booking.findOne({
       _id: { $ne: booking._id },
       room: booking.room,
@@ -134,12 +134,12 @@ export const updateBooking = async (
       return;
     }
 
-    // Update booking
+    // Uppdatera bokningen
     booking.startTime = startTime;
     booking.endTime = endTime;
     await booking.save();
 
-    // 📡 Real-time update
+    // Skicka realtidsnotis om ändring
     io.emit("booking:updated", {
       message: "En bokning har uppdaterats",
       booking,
@@ -151,7 +151,7 @@ export const updateBooking = async (
   }
 };
 
-// ❌ Delete a Booking – DELETE /api/bookings/:id
+// Radera en bokning – DELETE /api/bookings/:id
 export const deleteBooking = async (
   req: Request,
   res: Response
@@ -165,7 +165,7 @@ export const deleteBooking = async (
       return;
     }
 
-    // Only the creator or Admin can delete
+    // Kontrollera att det är skaparen eller admin som försöker radera
     if (
       booking.user.toString() !== req.user!.userId &&
       req.user!.role !== "Admin"
@@ -176,7 +176,7 @@ export const deleteBooking = async (
 
     await booking.deleteOne();
 
-    // 📡 Real-time notification for deletion
+    // Skicka realtidsnotis om radering
     io.emit("booking:deleted", {
       message: "En bokning har raderats",
       bookingId: booking._id,

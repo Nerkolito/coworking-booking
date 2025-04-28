@@ -1,4 +1,4 @@
-// 📦 Import dependencies
+// Importerar Express och funktioner från bookingController
 import express from "express";
 import {
   createBooking,
@@ -11,27 +11,23 @@ import { authenticate, authorizeAdmin } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
-// 🛡️ Protect all /bookings routes - authentication required
+// Alla routes här kräver att användaren är inloggad (JWT-token)
 router.use(authenticate);
 
-// 🛡️ GET /api/bookings/all
-// Admin: See all bookings
+// Hämta alla bokningar (endast för Admin)
 router.get("/all", authorizeAdmin, getAllBookings);
 
-// 📋 GET /api/bookings
-// Regular user: See own bookings
+// Hämta inloggad användares egna bokningar
 router.get("/", getMyBookings);
 
-// 📦 POST /api/bookings
-// Create a new booking (User or Admin)
+// Skapa en ny bokning (både User och Admin kan boka)
 router.post("/", createBooking);
 
-// ✏️ PUT /api/bookings/:id
-// Update an existing booking (Owner or Admin)
+// Uppdatera en bokning (endast skaparen eller Admin)
 router.put("/:id", updateBooking);
 
-// ❌ DELETE /api/bookings/:id
-// Delete a booking (Owner or Admin)
+// Ta bort en bokning (endast skaparen eller Admin)
 router.delete("/:id", deleteBooking);
 
+// Exporterar router för att användas i server.ts
 export default router;

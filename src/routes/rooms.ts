@@ -1,4 +1,4 @@
-// 📦 Import dependencies
+// Importerar Express och funktioner från roomController
 import express from "express";
 import {
   createRoom,
@@ -6,27 +6,25 @@ import {
   updateRoom,
   deleteRoom,
 } from "../controller/roomController";
+
 import { authenticate, authorizeAdmin } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
-// 🛡️ Protect all /rooms routes - authentication required
+// Alla routes här kräver att användaren är inloggad (JWT-token)
 router.use(authenticate);
 
-// 📋 GET /api/rooms
-// Fetch all available rooms (User or Admin)
+// Hämta alla tillgängliga rum (både User och Admin kan se)
 router.get("/", getAllRooms);
 
-// 🏗️ POST /api/rooms
-// Create a new room (Admin only)
+// Skapa ett nytt rum (endast Admin kan skapa)
 router.post("/", authorizeAdmin, createRoom);
 
-// ✏️ PUT /api/rooms/:id
-// Update an existing room (Admin only)
+// Uppdatera ett rum (endast Admin)
 router.put("/:id", authorizeAdmin, updateRoom);
 
-// ❌ DELETE /api/rooms/:id
-// Delete a room (Admin only)
+// Ta bort ett rum (endast Admin)
 router.delete("/:id", authorizeAdmin, deleteRoom);
 
+// Exporterar router för att användas i server.ts
 export default router;

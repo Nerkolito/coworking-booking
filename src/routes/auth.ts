@@ -1,4 +1,4 @@
-// 📦 Import dependencies
+// Importerar Express och funktioner från authController
 import express from "express";
 import {
   login,
@@ -8,16 +8,14 @@ import {
 
 const router = express.Router();
 
-// ✅ POST /api/auth/login
-// User login and receive JWT
+// Inloggning för användare – returnerar JWT-token
 router.post("/login", login);
 
-// ✅ POST /api/auth/register-admin
-// Admin user registration (for initial setup)
+// Registrering av adminanvändare (används t.ex. för första admin-kontot)
 router.post("/register-admin", registerAdmin);
 
-// ✅ POST /api/auth/register
-// Regular user registration
+// Registrering av vanlig användare
 router.post("/register", registerUser);
 
+// Exporterar router för att användas i server.ts
 export default router;

@@ -1,9 +1,8 @@
-// 📦 Import Express types and Room model
 import { Request, Response, NextFunction } from "express";
 import Room from "../models/Room";
 import redisClient from "../config/redisClient";
 
-// 🏗️ Create a new Room – POST /api/rooms
+// Skapa nytt rum – POST /api/rooms
 export const createRoom = async (
   req: Request,
   res: Response,
@@ -12,25 +11,27 @@ export const createRoom = async (
   try {
     const { name, capacity, type } = req.body;
 
+    // Säkerställ att alla fält är ifyllda
     if (!name || !capacity || !type) {
       res.status(400).json({ message: "Alla fält måste fyllas i" });
       return;
     }
 
+    // Skapa och spara nytt rum i databasen
     const newRoom = new Room({ name, capacity, type });
     const savedRoom = await newRoom.save();
 
-    // Rensa cache eftersom vi skapat ett nytt rum
+    // Töm cachen för rum (så att nästa hämtning visar uppdaterad data)
     await redisClient.del("rooms:all");
 
     res.status(201).json(savedRoom);
   } catch (err) {
-    console.error("Error creating room:", err);
+    console.error("Fel vid skapande av rum:", err);
     res.status(500).json({ message: "Kunde inte skapa rum", error: err });
   }
 };
 
-// 📋 Get all Rooms – GET /api/rooms (with Redis caching)
+// Hämta alla rum – GET /api/rooms (med Redis-caching)
 export const getAllRooms = async (
   _req: Request,
   res: Response
@@ -38,28 +39,31 @@ export const getAllRooms = async (
   try {
     const cacheKey = "rooms:all";
 
+    // Försök hämta rum från Redis först
     const cachedRooms = await redisClient.get(cacheKey);
 
     if (cachedRooms) {
-      console.log("✅ Redis cache hit - returning rooms from cache.");
+      console.log("✅ Rum hämtade från cache (Redis).");
       res.status(200).json(JSON.parse(cachedRooms));
       return;
     }
 
-    console.log("🛑 Redis cache miss - fetching rooms from MongoDB.");
+    // Om inget i cache, hämta från MongoDB
+    console.log("🛑 Ingen cache - hämtar från databasen.");
     const rooms = await Room.find();
 
-    await redisClient.set(cacheKey, JSON.stringify(rooms), { EX: 3600 }); // 1h
+    // Spara resultatet i Redis i 1 timme
+    await redisClient.set(cacheKey, JSON.stringify(rooms), { EX: 3600 });
 
-    console.log("✅ Rooms cached in Redis.");
+    console.log("✅ Rum har lagrats i cache.");
     res.status(200).json(rooms);
   } catch (err) {
-    console.error("Error fetching rooms:", err);
+    console.error("Fel vid hämtning av rum:", err);
     res.status(500).json({ message: "Kunde inte hämta rum" });
   }
 };
 
-// ✏️ Update a Room – PUT /api/rooms/:id
+// Uppdatera ett rum – PUT /api/rooms/:id
 export const updateRoom = async (
   req: Request,
   res: Response,
@@ -69,11 +73,13 @@ export const updateRoom = async (
     const { id } = req.params;
     const { name, capacity, type } = req.body;
 
+    // Kontrollera att alla nödvändiga fält är ifyllda
     if (!name || !capacity || !type) {
       res.status(400).json({ message: "Alla fält måste fyllas i" });
       return;
     }
 
+    // Hitta och uppdatera rummet
     const updatedRoom = await Room.findByIdAndUpdate(
       id,
       { name, capacity, type },
@@ -85,17 +91,17 @@ export const updateRoom = async (
       return;
     }
 
-    // Rensa cache efter uppdatering
+    // Töm cache eftersom data ändrats
     await redisClient.del("rooms:all");
 
     res.status(200).json(updatedRoom);
   } catch (err) {
-    console.error("Error updating room:", err);
+    console.error("Fel vid uppdatering av rum:", err);
     res.status(500).json({ message: "Kunde inte uppdatera rum", error: err });
   }
 };
 
-// ❌ Delete a Room – DELETE /api/rooms/:id
+// Ta bort ett rum – DELETE /api/rooms/:id
 export const deleteRoom = async (
   req: Request,
   res: Response,
@@ -104,6 +110,7 @@ export const deleteRoom = async (
   try {
     const { id } = req.params;
 
+    // Hitta och ta bort rummet
     const deletedRoom = await Room.findByIdAndDelete(id);
 
     if (!deletedRoom) {
@@ -111,12 +118,12 @@ export const deleteRoom = async (
       return;
     }
 
-    // Rensa cache efter borttagning
+    // Töm cache eftersom ett rum raderades
     await redisClient.del("rooms:all");
 
     res.status(200).json({ message: "Rummet har tagits bort" });
   } catch (err) {
-    console.error("Error deleting room:", err);
+    console.error("Fel vid borttagning av rum:", err);
     res.status(500).json({ message: "Kunde inte ta bort rum", error: err });
   }
 };
