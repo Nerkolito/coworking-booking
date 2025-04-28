@@ -33,7 +33,7 @@ io.on("connection", (socket) => {
   console.log(`🟢 Ny socket-anslutning: ${socket.id}`);
 });
 
-// Serverar statiska filer (t.ex. index.html för notifieringar)
+// Serverar statiska filer
 app.use(express.static(path.join(__dirname, "../public")));
 
 // Middleware för att hantera CORS och JSON-data
